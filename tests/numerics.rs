@@ -96,5 +96,8 @@ fn burn_vulkan_f16_matches_matrixmultiply() {
         let tol = 1e-2 * y.abs().max(1.0);
         worst = worst.max(err / tol);
     }
-    assert!(worst < 1.0, "f16 GEMV out of tolerance: worst/tol = {worst}");
+    assert!(
+        worst < 1.0,
+        "f16 GEMV out of tolerance: worst/tol = {worst}"
+    );
 }

@@ -19,10 +19,8 @@ fn main() {
              Re-run with `-- gemm|mm_` to skip it."
         );
     }
-    let _ = env_logger::Builder::from_env(
-        env_logger::Env::default().default_filter_or("info"),
-    )
-    .try_init();
+    let _ = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+        .try_init();
     Divan::from_args().run_benches();
 }
 
