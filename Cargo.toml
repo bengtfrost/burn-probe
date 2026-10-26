@@ -11,6 +11,7 @@ matrixmultiply = "0.3"
 
 [dev-dependencies]
 divan = "0.1"
+env_logger = "0.11"
 
 [[bench]]
 name = "matmul"
