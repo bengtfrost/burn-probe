@@ -5,11 +5,12 @@
 // dtype: f32 on both sides. See vulkex/README for the vulkex × CPU numbers
 // quoted in the project writeup.
 
-use burn::tensor::{Distribution, Tensor};
+use burn::tensor::{Distribution, Tensor, f16};
 use burn_wgpu::Vulkan;
 use divan::{Bencher, Divan};
 
 type B = Vulkan<f32, i32>;
+type Bf16 = Vulkan<f16, i32>;
 
 fn main() {
     if !is_x86_feature_detected!("avx2") || !is_x86_feature_detected!("fma") {
@@ -52,6 +53,10 @@ fn sync(t: Tensor<B, 2>) -> f32 {
     t.sum().into_scalar()
 }
 
+fn sync_f16(t: Tensor<Bf16, 2>) -> f16 {
+    t.sum().into_scalar()
+}
+
 #[divan::bench(args = GEMV_SHAPES)]
 fn burn_gemv(bencher: Bencher, &(m, k): &(usize, usize)) {
     let device = Default::default();
@@ -68,6 +73,29 @@ fn burn_gemv_lm(bencher: Bencher, &(m, k): &(usize, usize)) {
     let x: Tensor<B, 2> = Tensor::random([k, 1], Distribution::Default, &device);
     let _ = sync(w.clone().matmul(x.clone()));
     bencher.bench_local(|| sync(w.clone().matmul(x.clone())));
+}
+
+// f16 GEMV probes: same shapes as burn_gemv / burn_gemv_lm, halved bytes.
+// The open question (handoff Q3) is whether these are bandwidth-bound enough
+// that halving traffic beats the f32 baseline. If yes, Gen9 fp16 can pay off
+// even though ANV exposes fp16 at the same compute rate as fp32.
+
+#[divan::bench(args = GEMV_SHAPES)]
+fn burn_gemv_f16(bencher: Bencher, &(m, k): &(usize, usize)) {
+    let device = Default::default();
+    let w: Tensor<Bf16, 2> = Tensor::random([m, k], Distribution::Default, &device);
+    let x: Tensor<Bf16, 2> = Tensor::random([k, 1], Distribution::Default, &device);
+    let _ = sync_f16(w.clone().matmul(x.clone()));
+    bencher.bench_local(|| sync_f16(w.clone().matmul(x.clone())));
+}
+
+#[divan::bench(args = GEMV_LM_HEAD, sample_count = 3, sample_size = 1)]
+fn burn_gemv_lm_f16(bencher: Bencher, &(m, k): &(usize, usize)) {
+    let device = Default::default();
+    let w: Tensor<Bf16, 2> = Tensor::random([m, k], Distribution::Default, &device);
+    let x: Tensor<Bf16, 2> = Tensor::random([k, 1], Distribution::Default, &device);
+    let _ = sync_f16(w.clone().matmul(x.clone()));
+    bencher.bench_local(|| sync_f16(w.clone().matmul(x.clone())));
 }
 
 #[divan::bench(args = GEMM_SHAPES)]
