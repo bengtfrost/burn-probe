@@ -1,0 +1,17 @@
+# Cargo.toml
+[package]
+name = "burn-probe"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn = { version = "0.20", default-features = false, features = ["std"] }
+burn-wgpu = { version = "0.20", features = ["vulkan", "cubecl-spirv"] }
+matrixmultiply = "0.3"
+
+[dev-dependencies]
+divan = "0.1"
+
+[[bench]]
+name = "matmul"
+harness = false
