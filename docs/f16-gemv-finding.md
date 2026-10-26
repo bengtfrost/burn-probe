@@ -8,6 +8,8 @@ CubeCL 0.9.0.
 
 **Date:** 2026-10-26. Tags: `v0.1-f16-gemv`.
 
+**Predecessor finding:** [`docs/vulkex-writeup.md`](vulkex-writeup.md) — a hand-written FP32 Vulkan executor on the same hardware reached the same production conclusion from the opposite direction.
+
 ## Summary
 
 Burn-Vulkan f16 GEMV beats both f32-Vulkan and a hand-written AVX2
